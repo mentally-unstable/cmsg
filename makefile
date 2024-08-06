@@ -8,7 +8,7 @@ MAIN := server
 VPATH := src:src/*.c
 
 OBJ_DIR := obj
-_OBJS := main.o
+_OBJS := main.o server.o
 OBJS := $(patsubst %, $(OBJ_DIR)/%, $(_OBJS) )
 
 .PHONY:	depend clean

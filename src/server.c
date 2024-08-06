@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 int cfd;
+int fd;
 
 char *read_msg(void);
 
@@ -45,7 +46,8 @@ void server_connect(void) {
     close(fd);
 }
 
-char *server_revc(void) {
+// TODO return string
+void server_recv(void) {
     // read from client with recv!
     char buf[1024];
     recv(cfd, buf, sizeof(buf), 0);
@@ -55,23 +57,32 @@ char *server_revc(void) {
 }
 
 char *read_msg(void) {
-    char *c = (char *) malloc(128);
+    char *s = (char *) malloc(128);
 
-    ;
+    char c = 0;
+    int i = 0;
+    while (c != '\n' && read(STDIN_FILENO, &c, 1) == 1) {
+        if (i == 128)
+            break;
 
-    return c;
+        s[i] = c;
+
+        i++;
+    }
+
+    return s;
 }
 
-static void client(int port) {
-    const int fd = socket(PF_INET, SOCK_STREAM, 0);
+void client_connect(char *ip, int port) {
+    fd = socket(PF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in addr = { 0 };
     addr.sin_family = AF_INET;
     addr.sin_port = htons((short) port);
 
-    // connect to local machine at specified port
+    // connect to machine at specified port
     char addrstr[NI_MAXHOST + NI_MAXSERV + 1];
-    snprintf(addrstr, sizeof(addrstr), "127.0.0.1:%d", port);
+    snprintf(addrstr, sizeof(addrstr), "%s:%d", ip, port);
 
     // parse into address
     inet_pton(AF_INET, addrstr, &addr.sin_addr);
@@ -81,10 +92,9 @@ static void client(int port) {
         perror("connect error:");
         return;
     }
+}
 
-    // say hey with send!
+void client_send(void) {
     char *msg = read_msg();
     send(fd, msg, strlen(msg) + 1, 0);
-
-    close(fd);
 }
